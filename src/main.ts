@@ -30,7 +30,14 @@ function isActresses(dati: unknown): dati is Actress {
     "biography" in dati &&
     typeof dati.biography === 'string' &&
     "img" in dati &&
-    typeof dati.img === 'string'
+    typeof dati.img === 'string' &&
+    "most_famous_movies" in dati &&
+    dati.most_famous_movies instanceof Array &&
+    dati.most_famous_movies.length === 3 &&
+    dati.most_famous_movies.every(m => typeof m === 'string') &&
+    "awards" in dati &&
+    typeof dati.awards === 'string' &&
+    "nationality" in dati && typeof dati.nationality === 'string'
   ) {
     return true;
   }
@@ -52,5 +59,23 @@ async function getActress(id: number): Promise<Actress | null> {
   } catch (err) {
     console.error(err)
     return null
+  }
+}
+
+async function getAllActresses(): Promise<Actress[]> {
+  try {
+    const res = await fetch(`http://localhost:3333/actresses`);
+    if (!res.ok) {
+      throw new Error('Errore http')
+    }
+    const dati: unknown = await res.json();
+    if (!(dati instanceof Array)) {
+      throw new Error('Errore nel formato')
+    }
+    const validActress: Actress[] = dati.filter(isActresses)
+    return validActress
+  } catch (err) {
+    console.error(err)
+    return []
   }
 }
